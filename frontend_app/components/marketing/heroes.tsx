@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, easeOut, easeInOut } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 const containerVariants = {
@@ -25,7 +25,7 @@ const imageVariants = {
     scale: 1,
     transition: {
       duration: 0.9,
-      ease: "easeOut",
+      ease: easeOut,
     },
   },
 };
@@ -38,7 +38,7 @@ const floatAnim = {
   transition: {
     repeat: Infinity,
     duration: 5,
-    ease: "easeInOut",
+    ease: easeInOut,
   },
 };
 
