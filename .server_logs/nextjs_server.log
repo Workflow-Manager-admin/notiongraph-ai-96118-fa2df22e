@@ -1,0 +1,112 @@
+
+> nextjs@0.1.0 dev
+> next dev -p 3000 -H 0.0.0.0
+
+   ▲ Next.js 15.2.3
+   - Local:        http://localhost:3000
+   - Network:      http://0.0.0.0:3000
+
+ ✓ Starting...
+ ✓ Ready in 1406ms
+[Error: ENOENT: no such file or directory, scandir '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'
+}
+ ⨯ unhandledRejection: [Error: ENOENT: no such file or directory, scandir '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'
+}
+ ⨯ unhandledRejection:  [Error: ENOENT: no such file or directory, scandir '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'
+}
+[Error: ENOENT: no such file or directory, scandir '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'
+}
+[Error: ENOENT: no such file or directory, scandir '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'
+}
+[Error: ENOENT: no such file or directory, scandir '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'
+}
+[Error: ENOENT: no such file or directory, scandir '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'
+}
+[Error: ENOENT: no such file or directory, scandir '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'
+}
+[Error: ENOENT: no such file or directory, scandir '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'
+}
+[Error: ENOENT: no such file or directory, scandir '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'
+}
+[Error: ENOENT: no such file or directory, scandir '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'
+}
+[Error: ENOENT: no such file or directory, scandir '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'
+}
+[Error: ENOENT: no such file or directory, scandir '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'
+}
+[Error: ENOENT: no such file or directory, scandir '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'
+}
+[Error: ENOENT: no such file or directory, scandir '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'
+}
+[Error: ENOENT: no such file or directory, scandir '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'
+}
+[Error: ENOENT: no such file or directory, scandir '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: '/home/kavia/workspace/code-generation/notiongraph-ai-96118-fa2df22e/frontend_app/src/app'
+}
