@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, easeOut, easeInOut } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 const containerVariants = {
@@ -13,6 +13,10 @@ const containerVariants = {
   },
 };
 
+/**
+ * Use cubic-bezier for "easeOut": [0.16, 1, 0.3, 1] or import circOut/easeOut from framer-motion.
+ * We'll use the cubic-bezier array for safety.
+ */
 const imageVariants = {
   hidden: {
     opacity: 0,
@@ -25,11 +29,15 @@ const imageVariants = {
     scale: 1,
     transition: {
       duration: 0.9,
-      ease: "easeOut",
+      // Use built-in ease as string for framer-motion
+      ease: easeOut,
     },
   },
 };
 
+/**
+ * Use [0.42, 0, 0.58, 1] for easeInOut
+ */
 const floatAnim = {
   animate: {
     y: [0, -10, 0],
@@ -38,7 +46,7 @@ const floatAnim = {
   transition: {
     repeat: Infinity,
     duration: 5,
-    ease: "easeInOut",
+    ease: easeInOut,
   },
 };
 

@@ -1,11 +1,12 @@
 "use client";
 
+import * as React from "react"; // Ensure JSX namespace is available
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Sun, Moon, Monitor } from "lucide-react"; // 👈 updated icon for system
 import { cn } from "@/lib/utils";
 
-const iconMap: Record<string, JSX.Element> = {
+const iconMap: Record<string, React.ReactElement> = {
   light: <Sun className="h-5 w-5" />,
   dark: <Moon className="h-5 w-5" />,
   system: <Monitor className="h-5 w-5" />, // 👈 system icon is now a monitor
