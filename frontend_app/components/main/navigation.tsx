@@ -8,6 +8,7 @@ import {
   Search,
   Settings,
   Trash,
+  Share2,
 } from "lucide-react";
 import React, {
   ElementRef,
@@ -154,6 +155,7 @@ export const Navigation = () => {
           <UserItem />
           <Item onClick={search.onOpen} label="Search" icon={Search} isSearch />
           <Item onClick={settings.onOpen} label="Settings" icon={Settings} />
+          <Item onClick={() => router.push("/graph")} label="Graph View" icon={Share2} />
           <Item onClick={handleCreate} label="New Page" icon={PlusCircle} />
         </div>
         <div className="mt-4">
