@@ -22,8 +22,9 @@ body,
     --primary: 220 100% 56%; /* Neon blue for light CTAs */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
+    /* UPDATED SECONDARY: Brand Light Blue for Athera */
+    --secondary: 212 92% 68%; /* #60A5FA - Tailwind blue-400 */
+    --secondary-foreground: 215 28% 17%; /* Slate for text on blue */
 
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
@@ -51,11 +52,11 @@ body,
     --popover: 0 0% 0%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 190 100% 60%; /* Vibrant cyan/blue */
-    --primary-foreground: 0 0% 0%;
+    --primary: 220 100% 56%; /* Keep strong blue for primary/dark too */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 100% 10%; /* Deep blue-black */
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 212 92% 68%; /* same brand blue for both themes for consistency */
+    --secondary-foreground: 215 28% 17%;
 
     --muted: 220 100% 12%;
     --muted-foreground: 190 100% 70%;
@@ -80,6 +81,17 @@ body,
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Utility for modern/brand link colors */
+a,
+.markdown-preview a {
+  color: #60A5FA;
+  transition: color 0.15s;
+}
+a:hover,
+.markdown-preview a:hover {
+  color: #3b82f6;
 }
 
 @layer utilities {

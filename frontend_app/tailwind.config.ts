@@ -1,4 +1,4 @@
-/** @type {import('tailwindcss').Config} */
+ /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
   content: [
@@ -22,13 +22,18 @@ module.exports = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        /**
+         * Primary — strong blue (unchanged per original branding)
+         * Secondary — updated to a modern light blue!
+         */
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          // #60A5FA is Tailwind blue-400. HSL: 212, 92%, 68%
+          DEFAULT: "#60A5FA",
+          foreground: "#1e293b", // dark slate for legible text
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
