@@ -1,5 +1,5 @@
 {
-  "name": "notion-clone",
+  "name": "athera",
   "version": "0.1.1",
   "private": true,
   "scripts": {
@@ -64,5 +64,6 @@
     "postcss": "^8",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
-  }
+  },
+  "description": "Athera: Notion/Obsidian-style Markdown workspace with AI, graph view, Dropbox, and offline support"
 }

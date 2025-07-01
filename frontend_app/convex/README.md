@@ -1,4 +1,4 @@
-# Welcome to your Convex functions directory!
+# Welcome to the Athera Convex functions directory!
 
 Write your Convex functions here. See
 https://docs.convex.dev/using/writing-convex-functions for more.

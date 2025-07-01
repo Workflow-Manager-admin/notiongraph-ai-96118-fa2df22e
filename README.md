@@ -1,1 +1,3 @@
-# notiongraph-ai-96118-fa2df22e
+# Athera
+
+Workspace for the Athera app.
