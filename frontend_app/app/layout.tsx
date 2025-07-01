@@ -7,6 +7,7 @@ import { Toaster } from "sonner";
 import { ModalProvider } from "@/components/providers/modal-provider";
 import { EdgeStoreProvider } from "@/lib/edgestore";
 import React from "react";
+import AethraBotGlobalProvider from "@/components/aethrabot-global-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,6 +30,7 @@ export const metadata: Metadata = {
   },
 };
 
+// PUBLIC_INTERFACE
 export default function RootLayout({
   children,
 }: {
@@ -48,7 +50,9 @@ export default function RootLayout({
             >
               <Toaster position="bottom-center" />
               <ModalProvider />
-              {children}
+              <AethraBotGlobalProvider>
+                {children}
+              </AethraBotGlobalProvider>
             </ThemeProvider>
           </EdgeStoreProvider>
         </ConvexClientProvider>
