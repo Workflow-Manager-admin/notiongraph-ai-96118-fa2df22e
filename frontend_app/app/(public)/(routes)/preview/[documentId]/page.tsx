@@ -4,16 +4,16 @@ import { useMutation, useQuery } from "convex/react";
 import dynamic from "next/dynamic";
 import { useMemo } from "react";
 
-import { api } from "../../../../convex/_generated/api";
-import { Toolbar } from "../../../../components/toolbar";
-import { Cover } from "../../../../components/cover";
-import { Skeleton } from "../../../../components/ui/skeleton";
+import { api } from "@/convex/_generated/api";
+import { Toolbar } from "@/components/toolbar";
+import { Cover } from "@/components/cover";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useParams } from "next/navigation";
 
 export default function DocumentIdPage() {
   const { documentId } = useParams();
   const Editor = useMemo(
-    () => dynamic(() => import("../../../../components/editor"), { ssr: false }),
+    () => dynamic(() => import("@/components/editor"), { ssr: false }),
     [],
   );
 
