@@ -12,7 +12,6 @@ import { FileIcon } from "lucide-react";
 interface DocumentListProps {
   parentDocumentId?: Id<"documents">;
   level?: number;
-  data?: Doc<"documents">[];
 }
 
 export const DocumentList = ({
@@ -23,20 +22,21 @@ export const DocumentList = ({
   const router = useRouter();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
-  const onExpand = (documentId: string) => {
-    setExpanded((prevExpand) => ({
-      ...prevExpand,
-      [documentId]: !prevExpand[documentId],
-    }));
-  };
-
   const documents = useQuery(api.documents.getSidebar, {
     parentDocument: parentDocumentId,
   });
 
-  const onRedirect = (documentId: string) => {
+  const handleToggleExpand = (documentId: string) => {
+    setExpanded((prev) => ({
+      ...prev,
+      [documentId]: !prev[documentId],
+    }));
+  };
+
+  const handleRedirect = (documentId: string) => {
     router.push(`/documents/${documentId}`);
   };
+
   if (documents === undefined) {
     return (
       <>
@@ -50,33 +50,41 @@ export const DocumentList = ({
       </>
     );
   }
-  return (
-    <>
+
+  if (documents.length === 0 && level > 0) {
+    return (
       <p
         className={cn(
-          "hidden text-sm font-medium text-muted-foreground/80",
-          expanded && "last:block",
-          level === 0 && "hidden",
+          "text-sm text-muted-foreground italic",
+          "ml-[calc(12px*level+25px)] mt-1"
         )}
-        style={{ paddingLeft: level ? `${level * 12 + 25}px` : undefined }}
+        style={{ paddingLeft: `${level * 12 + 25}px` }}
       >
-        No page inside
+        No pages inside
       </p>
+    );
+  }
+
+  return (
+    <>
       {documents.map((document) => (
         <div key={document._id}>
           <Item
             id={document._id}
             label={document.title}
-            onClick={() => onRedirect(document._id)}
             icon={FileIcon}
             documentIcon={document.icon}
+            onClick={() => handleRedirect(document._id)}
             active={params.documentId === document._id}
             level={level}
-            onExpand={() => onExpand(document._id)}
+            onExpand={() => handleToggleExpand(document._id)}
             expanded={expanded[document._id]}
           />
           {expanded[document._id] && (
-            <DocumentList parentDocumentId={document._id} level={level + 1} />
+            <DocumentList
+              parentDocumentId={document._id}
+              level={level + 1}
+            />
           )}
         </div>
       ))}

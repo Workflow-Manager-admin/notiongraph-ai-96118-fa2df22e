@@ -23,7 +23,8 @@ export default function DocumentIdPage() {
 
   const onChange = (content: string) => {
     // @ts-ignore
-    update({ id: documentId, content });
+    update({ id: documentId as string, content });
+
   };
 
   if (document === undefined) {
@@ -45,6 +46,7 @@ export default function DocumentIdPage() {
   if (document === null) {
     return <div>Not found</div>;
   }
+
 
   return (
     <div className="pb-40">

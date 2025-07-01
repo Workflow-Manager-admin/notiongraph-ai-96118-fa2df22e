@@ -34,8 +34,6 @@ import { TrashBox } from "@/components/main/trash-box";
 import { useSearch } from "@/hooks/use-search";
 import { useSettings } from "@/hooks/use-settings";
 import { Navbar } from "@/components/main/navbar";
-import { Share2 } from "lucide-react";
-import { useGraphModal } from "@/hooks/use-graph-modal";
 
 export const Navigation = () => {
   const router = useRouter();
@@ -157,12 +155,6 @@ export const Navigation = () => {
           <Item onClick={search.onOpen} label="Search" icon={Search} isSearch />
           <Item onClick={settings.onOpen} label="Settings" icon={Settings} />
           <Item onClick={handleCreate} label="New Page" icon={PlusCircle} />
-          {/* PUBLIC_INTERFACE: Graph View Button */}
-          <Item
-            onClick={useGraphModal().open}
-            label="Graph View"
-            icon={Share2}
-          />
         </div>
         <div className="mt-4">
           <DocumentList />

@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// PUBLIC_INTERFACE
-/**
- * POST handler for /api/aethrabot:
- * Proxies chat requests to the Gemini API using GEMINI_API_KEY from environment variables.
- */
 export async function POST(req: NextRequest) {
-  // Get user prompt from incoming request
   const { prompt = "", system = "" } = await req.json();
 
-  // Read Gemini API key from environment variable
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
   if (!GEMINI_API_KEY) {
     return NextResponse.json(
@@ -18,8 +11,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Prepare request to Gemini API (example: Gemini 1.5 Pro, adjust endpoint as needed)
-  const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=" + GEMINI_API_KEY;
+  // ✅ Use Gemini 1.5 Flash model (free)
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
   try {
     const geminiRes = await fetch(GEMINI_URL, {
@@ -30,8 +23,35 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         contents: [
           {
-            parts: [{ text: prompt }],
-            ...(system && { role: "system", text: system }),
+            role: "user",
+            parts: [
+              { text: `${system}\n\n${prompt}` }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.5,
+          topP: 0.95,
+          topK: 40,
+          maxOutputTokens: 2048,
+          responseMimeType: "text/plain",
+        },
+        safetySettings: [
+          {
+            category: "HARM_CATEGORY_HARASSMENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE",
+          },
+          {
+            category: "HARM_CATEGORY_HATE_SPEECH",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE",
+          },
+          {
+            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE",
+          },
+          {
+            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE",
           },
         ],
       }),
@@ -43,7 +63,20 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await geminiRes.json();
-    return NextResponse.json(data);
+
+    const responseText =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "Sorry, I couldn't generate a response. Please try again.";
+
+    return NextResponse.json({
+      candidates: [
+        {
+          content: {
+            parts: [{ text: responseText }],
+          },
+        },
+      ],
+    });
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || "Unexpected error contacting Gemini API." },

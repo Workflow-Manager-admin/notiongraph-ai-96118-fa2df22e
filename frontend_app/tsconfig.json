@@ -21,7 +21,13 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@/components/*": ["components/*"]
+      "@/components/*": ["components/*"],
+      "@components/*": ["components/*"],
+      "@ui/*": ["components/ui/*"],
+      "@modals/*": ["components/modals/*"],
+      "@providers/*": ["components/providers/*"],
+      "@main/*": ["components/main/*"],
+      "@marketing/*": ["components/marketing/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

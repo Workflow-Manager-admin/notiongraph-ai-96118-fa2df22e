@@ -1,363 +1,366 @@
+"use client";
 import React, { useState, useRef, useEffect } from "react";
+import { useClerk } from "@clerk/nextjs";
+import { Button } from "@ui/button";
+import { Textarea } from "@ui/textarea";
+import { Card, CardHeader, CardTitle, CardContent } from "@ui/card";
+import { ScrollArea } from "@ui/scroll-area";
+import { Loader2, Send, Bookmark, Sparkles, Clipboard } from "lucide-react";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { toast } from 'sonner';
 
-// PUBLIC_INTERFACE
-/**
- * AethraBotChat: Gemini-powered conversational AI chat widget for the Aethra app.
- * Features: Freeform chat, Summarize, Generate, Rewrite, with message history and full UI.
- * Talks to the /api/aethrabot endpoint, which is backed by Google Gemini.
- */
-type AethraBotMode = "chat" | "summarize" | "generate" | "rewrite";
-
-// A subtle, modern floating chat window
-const widgetStyles: React.CSSProperties = {
-  position: "fixed",
-  bottom: 32,
-  right: 32,
-  width: 370,
-  maxWidth: "95vw",
-  zIndex: 1010,
-  boxShadow: "0 6px 32px 3px rgba(40,60,170,0.08), 0 0 0 1.5px #edefff", 
-  borderRadius: 16,
-  overflow: "hidden",
-  background: "rgba(252,253,255,0.99)",
-  border: "1px solid #eef2fa",
-  fontFamily: "inherit"
+type Message = {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
 };
 
-const headerStyles: React.CSSProperties = {
-  background: "linear-gradient(90deg,#2563eb44 -10%, #eab30877 120%)",
-  padding: "1em",
-  fontWeight: 700,
-  color: "#1e293b",
-  borderBottom: "1px solid #e5e7eb",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between"
-};
-
-const modeButtonStyles = (active: boolean): React.CSSProperties => ({
-  border: "none",
-  background: active ? "#2563eb" : "#f1f5f9",
-  color: active ? "#fff" : "#333",
-  borderRadius: 6,
-  marginLeft: 2,
-  marginRight: 2,
-  fontWeight: 500,
-  padding: "0.25em 0.7em",
-  cursor: "pointer",
-  fontSize: "1em"
-});
-
-const chatBodyStyles: React.CSSProperties = {
-  maxHeight: 350,
-  minHeight: 190,
-  overflowY: "auto",
-  padding: "1em"
-};
-
-const inputStyles: React.CSSProperties = {
-  width: "100%",
-  resize: "none",
-  border: "1.5px solid #dbeafe",
-  borderRadius: 8,
-  padding: "0.5em 0.9em",
-  fontSize: "1em",
-  marginBottom: 2
-};
-
-const sendButtonStyles: React.CSSProperties = {
-  background: "#2563eb",
-  color: "#fff",
-  padding: "0.58em 1.3em",
-  border: "none",
-  borderRadius: "9px",
-  fontWeight: 700,
-  cursor: "pointer",
-  fontSize: "1.06em",
-  marginLeft: "0.5em"
-};
-
-const closeButtonStyles: React.CSSProperties = {
-  fontSize: "1.25em",
-  background: "none",
-  border: "none",
-  color: "#555",
-  marginLeft: 5,
-  cursor: "pointer"
-};
-
-const spinner = (
-  <svg style={{ display: "inline", verticalAlign: "middle" }} width={20} height={20} viewBox="0 0 24 24">
-    <circle fill="none" stroke="#3b82f6" strokeWidth="3" cx="12" cy="12" r="10" strokeDasharray="60" strokeDashoffset="18">
-      <animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="1s" from="0 12 12" to="360 12 12"/>
-    </circle>
-  </svg>
-);
-
-interface Message {
-  role: "user" | "bot";
-  text: string;
-  type?: AethraBotMode;
-}
-
-const INITIAL_PROMPT: Record<AethraBotMode, string> = {
-  chat: "",
-  summarize: "Please summarize the following text:",
-  generate: "Please generate text based on the following input:",
-  rewrite: "Please rewrite the following text to improve clarity or style:"
-};
-
-const SYSTEM_PROMPT: string = "You are AethraBot, an expert writing, research, and organizational assistant for notes, documents, and productivity. Keep replies friendly, clear, concise, and actionable.";
-
-// Helper function for streaming or normal Gemini responses
-async function fetchGeminiResponse(userInput: string, system: string, signal?: AbortSignal) {
-  const response = await fetch("/api/aethrabot", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      prompt: userInput,
-      system
-    }),
-    signal
-  });
-
-  if (!response.ok) {
-    const errj = await response.json();
-    throw new Error(errj.error || "Unknown error from Gemini API");
-  }
-
-  const data = await response.json();
-  // "data" format: {candidates:[{content:{parts:[{text:"..."}]}}]}
-  let answer = "";
-  if (
-    data &&
-    data.candidates &&
-    Array.isArray(data.candidates) &&
-    data.candidates[0] &&
-    data.candidates[0].content &&
-    Array.isArray(data.candidates[0].content.parts)
-  ) {
-    answer = data.candidates[0].content.parts.map((p: any) => p.text).join("\n");
-  }
-  return answer || "No answer from Gemini.";
-}
-
-// Main Chat Component
 const AethraBotChat: React.FC = () => {
-  const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<AethraBotMode>("chat");
-  const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Message[]>(() =>
-    typeof window !== "undefined" && window.localStorage
-      ? JSON.parse(localStorage.getItem("aethrabot-messages") || "[]")
-      : []
-  );
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'chat' | 'notes'>('chat');
+  const { user } = useClerk();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const chatRef = useRef<HTMLDivElement>(null);
+  // Sample predefined prompts
+  const predefinedPrompts = [
+    "Summarize my notes about...",
+    "Generate study notes about...",
+    "Create bullet points for...",
+    "Explain this concept simply...",
+    "Convert this to markdown..."
+  ];
 
-  // Scroll to bottom when new message arrives
   useEffect(() => {
-    chatRef.current?.scrollTo({ top: 9999, behavior: "smooth" });
-  }, [messages.length, open]);
-
-  // Persist messages to localStorage
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.localStorage) {
-      localStorage.setItem("aethrabot-messages", JSON.stringify(messages));
-    }
+    scrollToBottom();
   }, [messages]);
 
-  const handleSend = async () => {
-    if (input.trim() === "") return;
-    setLoading(true);
-    setError(null);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
-    const convInput =
-      mode === "chat"
-        ? input
-        : `${INITIAL_PROMPT[mode]}\n${input}`;
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!input.trim()) return;
 
-    setMessages((prev) => [...prev, { role: "user", text: input, type: mode }]);
-    setInput("");
+    const userMessage: Message = {
+      role: 'user',
+      content: input,
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
 
     try {
-      const answer = await fetchGeminiResponse(convInput, SYSTEM_PROMPT);
-      setMessages((prev) => [...prev, { role: "bot", text: answer, type: mode }]);
-    } catch (err: any) {
-      setError(err.message || "Error fetching response.");
+      const response = await fetch('/api/aethrabot', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: input,
+          system: `You are AethraBot, an AI assistant for note-taking. The user is ${user?.fullName || 'a student'}. 
+          Provide concise, well-structured responses. Format responses in markdown when appropriate. 
+          For notes, use headings, bullet points, and clear organization.`
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const data = await response.json();
+      const assistantMessage: Message = {
+        role: 'assistant',
+        content: data.candidates[0].content.parts[0].text,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Failed to get response from AethraBot');
       setMessages((prev) => [
         ...prev,
-        { role: "bot", text: "[Error: " + (err.message || "unknown error") + "]", type: mode }
+        {
+          role: 'assistant',
+          content: 'Sorry, I encountered an error. Please try again.',
+          timestamp: new Date(),
+        },
       ]);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+  const handleQuickAction = (action: string) => {
+    let prompt = '';
+    switch (action) {
+      case 'summarize':
+        prompt = 'Summarize the following notes: [paste your notes here]';
+        break;
+      case 'expand':
+        prompt = 'Expand these bullet points into detailed notes: [paste your points here]';
+        break;
+      case 'quiz':
+        prompt = 'Create a quiz based on these notes: [paste your notes here]';
+        break;
+      case 'format':
+        prompt = 'Format these notes with proper headings and markdown: [paste your notes here]';
+        break;
+      default:
+        prompt = 'Help me with my notes: [describe what you need]';
     }
+    setInput(prompt);
+    setIsOpen(true);
   };
 
-  const clearConversation = () => {
-    setMessages([]);
-    localStorage.removeItem("aethrabot-messages");
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard!');
   };
 
-  // Mini widget open/close button (bottom right)
-  if (!open) {
-    return (
-      <button
-        style={{
-          position: "fixed",
-          bottom: 32,
-          right: 32,
-          zIndex: 1020,
-          background: "linear-gradient(100deg,#2563eb 55%,#eab308 120%)",
-          borderRadius: "100%",
-          border: "none",
-          width: 64,
-          height: 64,
-          boxShadow: "0 8px 36px 0 rgba(40,60,170,0.11)",
-          color: "#fff",
-          fontSize: 32,
-          cursor: "pointer",
-          outline: "none"
-        }}
-        aria-label="Open AethraBot Chat"
-        onClick={() => setOpen(true)}
-        title="Open AethraBot"
-      >
-        💬
-      </button>
-    );
-  }
+  const saveToNotes = (content: string) => {
+    // Implement your note-saving logic here
+    console.log('Saving to notes:', content);
+    toast.success('Note saved successfully!');
+  };
+
+  const renderMarkdown = (content: string) => (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mt-4 mb-2" {...props} />,
+        h2: ({ node, ...props }) => <h2 className="text-xl font-bold mt-4 mb-2" {...props} />,
+        h3: ({ node, ...props }) => <h3 className="text-lg font-bold mt-3 mb-1" {...props} />,
+        p: ({ node, ...props }) => <p className="mb-3 leading-relaxed" {...props} />,
+        ul: ({ node, ...props }) => <ul className="list-disc pl-6 mb-3" {...props} />,
+        ol: ({ node, ...props }) => <ol className="list-decimal pl-6 mb-3" {...props} />,
+        li: ({ node, ...props }) => <li className="mb-1" {...props} />,
+        code: ({ node, inline, className, children, ...props }) => {
+          if (inline) {
+            return (
+              <code className="bg-gray-200 dark:bg-gray-700 rounded px-1 py-0.5 text-sm" {...props}>
+                {children}
+              </code>
+            );
+          }
+          return (
+            <pre className="bg-gray-800 rounded-md p-3 my-2 overflow-x-auto">
+              <code className="text-white" {...props}>
+                {children}
+              </code>
+            </pre>
+          );
+        },
+        blockquote: ({ node, ...props }) => (
+          <blockquote className="border-l-4 border-gray-300 pl-4 italic text-gray-600 dark:text-gray-300 my-3" {...props} />
+        ),
+        a: ({ node, ...props }) => (
+          <a className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />
+        ),
+        table: ({ node, ...props }) => (
+          <div className="overflow-x-auto">
+            <table className="min-w-full border-collapse my-3" {...props} />
+          </div>
+        ),
+        th: ({ node, ...props }) => (
+          <th className="border px-4 py-2 text-left bg-gray-100 dark:bg-gray-700" {...props} />
+        ),
+        td: ({ node, ...props }) => (
+          <td className="border px-4 py-2" {...props} />
+        ),
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  );
 
   return (
-    <div style={widgetStyles} aria-label="AethraBot chat widget">
-      <div style={headerStyles}>
-        <span>
-          <span style={{fontWeight:700,color:"#2563eb"}}>Aethra</span>
-          <span style={{fontWeight:700,color:"#eab308"}}>Bot</span>
-          <span style={{marginLeft: 8,fontSize:"0.96em",fontWeight:400,color:"#1e293baa"}}>powered by Gemini</span>
-        </span>
-        <button style={closeButtonStyles} onClick={() => setOpen(false)} title="Close chat">×</button>
-      </div>
-      {/* Modes */}
-      <div style={{display:"flex", justifyContent:"center", alignItems:"center", padding:"0.4em", gap:4}}>
-        {(["chat","summarize","generate","rewrite"] as AethraBotMode[]).map((m) => (
-          <button
-            key={m}
-            onClick={() => setMode(m)}
-            style={modeButtonStyles(mode===m)}
-            aria-pressed={mode===m}
-          >
-            {m.charAt(0).toUpperCase() + m.slice(1)}
-          </button>
-        ))}
-        <button
-          onClick={clearConversation}
-          style={{
-            marginLeft: 10,
-            fontWeight:500, fontSize:"0.97em",
-            border:"none", background:"#f1f5f9",
-            color:"#d97706", borderRadius:6, padding:"0.18em 0.6em", cursor:"pointer"
-          }}
-          title="Clear conversation"
-        >
-          🗑 Clear
-        </button>
-      </div>
-      {/* Message history */}
-      <div ref={chatRef} style={chatBodyStyles}>
-        {messages.length === 0 ? (
-          <div style={{ color:"#9ca3af", textAlign:"center", marginTop:64, fontSize:"1.13em" }}>
-            Start a conversation!<br/>
-            Ask anything, or use Summarize/Rewrite/Generate.
-          </div>
-        ) : (
-          messages.map((msg, i) => (
-            <div
-              key={i}
-              style={{
-                textAlign: msg.role === "user" ? "right" : "left",
-                marginBottom: "1em"
-              }}
-            >
-              <div
-                style={{
-                  display: "inline-block",
-                  borderRadius: msg.role === "user" ? "12px 12px 3px 12px" : "12px 12px 12px 3px",
-                  background: msg.role === "user"
-                    ? "linear-gradient(90deg,#2563eb11,#2563eb05 70%)"
-                    : "linear-gradient(90deg,#fef9c311,#f5da7b11 130%)",
-                  color: "#262626",
-                  padding: "0.6em 1em",
-                  maxWidth: "80%",
-                  minWidth: "44px",
-                  fontSize: "1.07em",
-                  border: msg.role === "user" ? "1.5px solid #e0e7ef" : "1.5px solid #f7e598",
-                  boxShadow: "0 2.5px 10px 0 rgba(80,116,202,0.08)"
-                }}>
-                <span style={msg.role === "user" ? {color:"#2563eb",fontWeight:500}:{color:"#b9890c",fontWeight:520}}>
-                  {msg.role === "user" ? "You" : "AethraBot"}
-                </span>
-                <span style={{ fontWeight:400, color:"#999", fontSize:"0.9em", marginLeft:5 }}>
-                  {msg.type && msg.type !== "chat" ? `(${msg.type})` : ""}
-                </span>
-                <div style={{ marginTop: 4, whiteSpace: "pre-wrap" }}>{msg.text}</div>
+    <div className="fixed bottom-6 right-6 z-50">
+      {isOpen ? (
+        <Card className="w-96 h-[600px] flex flex-col shadow-xl border-primary/20">
+          <CardHeader className="p-4 border-b">
+            <div className="flex justify-between items-center">
+              <CardTitle className="text-lg">AethraBot Assistant</CardTitle>
+              <div className="flex space-x-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsOpen(false)}
+                  className="text-muted-foreground hover:text-primary"
+                >
+                  ✕
+                </Button>
               </div>
             </div>
-          ))
-        )}
-        {loading && (
-          <div style={{textAlign:"left",margin:"0.5em 0",color:"#eab308"}}>
-            {spinner} AethraBot is thinking...
-          </div>
-        )}
-        {error && (
-          <div style={{color:"#ea3b3b",margin:"0.7em 0"}}>{error}</div>
-        )}
-      </div>
-      {/* Input */}
-      <form
-        style={{
-          display:"flex",alignItems:"end",gap:8,
-          borderTop:"1.5px solid #e0e7ef",padding:"0.6em 1em",background:"#fbfcfe"
-        }}
-        onSubmit={e => {e.preventDefault(); handleSend();}}
-      >
-        <textarea
-          placeholder={
-            mode==="chat"
-              ? "Ask AethraBot anything..."
-              : mode==="summarize"
-                ? "Paste text to summarize"
-                : mode==="generate"
-                  ? "Describe what to generate"
-                  : "Paste text to rewrite"
-          }
-          rows={2}
-          style={inputStyles}
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={loading}
-          aria-label="Message input"
-        />
-        <button
-          type="submit"
-          style={sendButtonStyles}
-          disabled={loading || !input.trim()}
-          aria-label="Send message"
+            <div className="flex border-b">
+              <Button
+                variant={activeTab === 'chat' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveTab('chat')}
+                className="rounded-b-none"
+              >
+                Chat
+              </Button>
+              <Button
+                variant={activeTab === 'notes' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveTab('notes')}
+                className="rounded-b-none"
+              >
+                Notes Tools
+              </Button>
+            </div>
+          </CardHeader>
+
+          <CardContent className="flex-1 p-0 overflow-hidden">
+            {activeTab === 'chat' ? (
+              <>
+                <ScrollArea className="h-[400px] p-4">
+                  {messages.length === 0 ? (
+                    <div className="text-center text-muted-foreground py-8">
+                      <Sparkles className="mx-auto h-8 w-8 mb-2" />
+                      <p>Ask AethraBot to help with your notes!</p>
+                      <div className="mt-4 space-y-2">
+                        {predefinedPrompts.map((prompt, i) => (
+                          <Button
+                            key={i}
+                            variant="outline"
+                            size="sm"
+                            className="w-full text-left justify-start"
+                            onClick={() => {
+                              setInput(prompt);
+                              setIsOpen(true);
+                            }}
+                          >
+                            {prompt}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {messages.map((message, index) => (
+                        <div
+                          key={index}
+                          className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                        >
+                          <div
+                            className={`max-w-[80%] rounded-lg px-4 py-2 ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}
+                          >
+                            <div className="prose prose-sm dark:prose-invert max-w-none">
+                              {message.role === 'assistant' ? (
+                                renderMarkdown(message.content)
+                              ) : (
+                                <p>{message.content}</p>
+                              )}
+                            </div>
+                            <div className="flex justify-end space-x-2 mt-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 text-muted-foreground hover:text-primary"
+                                onClick={() => copyToClipboard(message.content)}
+                              >
+                                <Clipboard className="h-3 w-3" />
+                              </Button>
+                              {message.role === 'assistant' && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 text-muted-foreground hover:text-primary"
+                                  onClick={() => saveToNotes(message.content)}
+                                >
+                                  <Bookmark className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {isLoading && (
+                        <div className="flex justify-start">
+                          <div className="bg-secondary text-secondary-foreground rounded-lg px-4 py-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          </div>
+                        </div>
+                      )}
+                      <div ref={messagesEndRef} />
+                    </div>
+                  )}
+                </ScrollArea>
+
+                <form onSubmit={handleSubmit} className="p-4 border-t">
+                  <div className="flex space-x-2">
+                    <Textarea
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      placeholder="Ask AethraBot anything about your notes..."
+                      className="flex-1 resize-none"
+                      rows={2}
+                    />
+                    <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
+                      {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                </form>
+              </>
+            ) : (
+              <div className="p-4">
+                <h3 className="font-medium mb-4">Note Tools</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleQuickAction('summarize')}
+                    className="h-24 flex-col"
+                  >
+                    <Bookmark className="h-5 w-5 mb-1" />
+                    Summarize
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleQuickAction('expand')}
+                    className="h-24 flex-col"
+                  >
+                    <Sparkles className="h-5 w-5 mb-1" />
+                    Expand
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleQuickAction('quiz')}
+                    className="h-24 flex-col"
+                  >
+                    <Clipboard className="h-5 w-5 mb-1" />
+                    Create Quiz
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleQuickAction('format')}
+                    className="h-24 flex-col"
+                  >
+                    <span className="mb-1">#</span>
+                    Format
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <Button
+          onClick={() => setIsOpen(true)}
+          className="rounded-full h-14 w-14 shadow-lg bg-primary hover:bg-primary/90"
+          size="icon"
         >
-          {loading ? spinner : "Send"}
-        </button>
-      </form>
+          <Sparkles className="h-6 w-6" />
+        </Button>
+      )}
     </div>
   );
 };

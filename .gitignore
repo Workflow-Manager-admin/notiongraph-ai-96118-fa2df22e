@@ -45,6 +45,7 @@ yarn-error.log
 .pnp.js
 .env
 .env.test
+!.env.local
 .cache/
 .next/
 .nuxt/

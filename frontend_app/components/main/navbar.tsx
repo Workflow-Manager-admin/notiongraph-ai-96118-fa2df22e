@@ -17,43 +17,51 @@ interface NavbarProps {
 
 export const Navbar = ({ isCollapsed, onResetWidth }: NavbarProps) => {
   const params = useParams();
+  const documentId = params.documentId as Id<"documents">;
 
   const document = useQuery(api.documents.getById, {
-    documentId: params.documentId as Id<"documents">,
+    documentId,
   });
 
-  if (document === undefined) {
-    return (
-      <nav className="bg-background dark:bg-[#1F1F1F] px-3 py-2 w-full flex items-center justify-between">
-        <Title.Skeleton />
-        <div className="flex items-center gap-x-2">
-          <Menu.Skeleton />
-        </div>
-      </nav>
-    );
-  }
+  const isLoading = document === undefined;
+  const isMissing = document === null;
 
-  if (document === null) return null;
+  if (isMissing) return null;
 
   return (
     <>
-      <nav className="bg-background dark:bg-[#1F1F1F] px-3 py-2 w-full flex items-center gap-x-4">
+      <nav className="bg-background dark:bg-[#1F1F1F] border-b border-muted px-3 py-2 w-full flex items-center gap-x-4">
         {isCollapsed && (
           <MenuIcon
             role="button"
             onClick={onResetWidth}
-            className="h-6 w-6 text-muted-foreground"
+            className="h-6 w-6 text-muted-foreground hover:text-primary transition"
+            aria-label="Expand sidebar"
           />
         )}
         <div className="flex items-center justify-between w-full">
-          <Title initialData={document} />
+          {isLoading ? (
+            <Title.Skeleton />
+          ) : (
+            <Title initialData={document} />
+          )}
+
           <div className="flex items-center gap-x-2">
-            <Publish initialData={document} />
-            <Menu documentId={document._id} />
+            {isLoading ? (
+              <Menu.Skeleton />
+            ) : (
+              <>
+                <Publish initialData={document} />
+                <Menu documentId={document._id} />
+              </>
+            )}
           </div>
         </div>
       </nav>
-      {document.isArchived && <Banner documentId={document._id} />}
+
+      {!isLoading && document?.isArchived && (
+        <Banner documentId={document._id} />
+      )}
     </>
   );
 };
