@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import React from "react";
 
 // Dynamically import the floating global chat widget
-const AethraBotChat = dynamic(() => import("@/components/aethrabot-chat"), { ssr: false });
+const AethraBotChat = dynamic(() => import("./aethrabot-chat"), { ssr: false });
 
 // You can add user personalization here if desired
 // import { useUser } from "@clerk/nextjs";
@@ -19,7 +19,7 @@ export default function AethraBotGlobalProvider({
   return (
     <>
       {children}
-      <AethraBotChat user={user} />
+      <AethraBotChat />
     </>
   );
 }
