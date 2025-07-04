@@ -1,4 +1,6 @@
- /** @type {import('tailwindcss').Config} */
+ // Converted to JS for compatibility with Tailwind/PostCSS default config loading
+
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
   content: [
