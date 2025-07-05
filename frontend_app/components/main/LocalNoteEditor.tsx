@@ -78,7 +78,7 @@ export const LocalNoteEditor: React.FC<LocalNoteEditorProps> = ({
       />
       <div className="flex-1 min-h-[320px] max-h-[calc(100vh-200px)]">
         <BlocknoteEditor
-          value={content}
+          initialContent={content}
           onChange={handleContentChange}
           placeholder="Write your note here..."
           // Forward any extra props if your Blocknote editor needs

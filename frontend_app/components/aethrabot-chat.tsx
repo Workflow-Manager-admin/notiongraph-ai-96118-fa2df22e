@@ -18,7 +18,7 @@ type Message = {
   timestamp: Date;
 };
 
-const AethraBotChat: React.FC = () => {
+const AethraBotChat = () => {
   const saveBotNote = useMutation(api.documents.saveBotNote);
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
@@ -33,25 +33,25 @@ const AethraBotChat: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const speechSynthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
 
+  // Check if browser supports speech synthesis
+  const isSpeechSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
+
   // Load available voices
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    if (isSpeechSupported) {
       const loadVoices = () => {
         const availableVoices = window.speechSynthesis.getVoices();
-        setVoices(availableVoices);
+        setVoices(availableVoices.filter(voice => voice.lang.includes('en')));
       };
 
-      // Load voices immediately if available
       loadVoices();
-
-      // Some browsers load voices asynchronously
       window.speechSynthesis.onvoiceschanged = loadVoices;
 
       return () => {
         window.speechSynthesis.onvoiceschanged = null;
       };
     }
-  }, []);
+  }, [isSpeechSupported]);
 
   // Sample predefined prompts
   const predefinedPrompts = [
@@ -70,30 +70,27 @@ const AethraBotChat: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Text-to-speech functionality with proper voice handling
+  // Improved text-to-speech functionality
   const handleSpeak = (text: string, index: number) => {
-    if (!('speechSynthesis' in window)) {
-      toast.error('Text-to-speech is not supported in your browser');
+    if (!isSpeechSupported) {
+      toast.error('Text-to-speech not supported in your browser');
       return;
     }
 
     // Stop any ongoing speech
-    if (speechSynthesisRef.current) {
-      window.speechSynthesis.cancel();
-    }
+    handleStopSpeaking();
 
     try {
       // Remove markdown formatting for cleaner speech
-      const cleanText = text.replace(/[#*_`~]/g, '');
+      const cleanText = text.replace(/[#*_`~\[\]]/g, '');
 
       const utterance = new SpeechSynthesisUtterance(cleanText);
       utterance.rate = 0.9;
       utterance.pitch = 1.0;
 
-      // Select a voice (prefer English voices if available)
+      // Select a voice (prefer English voices)
       if (voices.length > 0) {
-        const englishVoice = voices.find(v => v.lang.includes('en')) || voices[0];
-        utterance.voice = englishVoice;
+        utterance.voice = voices[0]; // Use first available English voice
       }
 
       utterance.onstart = () => {
@@ -114,9 +111,6 @@ const AethraBotChat: React.FC = () => {
       };
 
       speechSynthesisRef.current = utterance;
-setTimeout(() => {
-  window.speechSynthesis.speak(utterance);
-}, 100);
       window.speechSynthesis.speak(utterance);
     } catch (error) {
       console.error('Error initializing speech:', error);
@@ -125,7 +119,7 @@ setTimeout(() => {
   };
 
   const handleStopSpeaking = () => {
-    if ('speechSynthesis' in window) {
+    if (isSpeechSupported && window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
     setIsSpeaking(false);
@@ -135,9 +129,7 @@ setTimeout(() => {
   // Clean up speech synthesis on unmount
   useEffect(() => {
     return () => {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
+      handleStopSpeaking();
     };
   }, []);
 
@@ -227,7 +219,7 @@ setTimeout(() => {
   const saveToNotes = async (content: string) => {
     try {
       // Remove markdown formatting for the title
-      const title = content.split('\n')[0].replace(/[#*_`~]/g, '').substring(0, 50);
+      const title = content.split('\n')[0].replace(/[#*_`~\[\]]/g, '').substring(0, 50);
       
       await saveBotNote({
         title: title || "AethraBot Note",
@@ -251,21 +243,24 @@ setTimeout(() => {
         ul: ({ node, ...props }) => <ul className="list-disc pl-6 mb-3" {...props} />,
         ol: ({ node, ...props }) => <ol className="list-decimal pl-6 mb-3" {...props} />,
         li: ({ node, ...props }) => <li className="mb-1" {...props} />,
-        code: ({ inline, className, children, ...props }: {
-  inline?: boolean;
-  className?: string;
-  children: React.ReactNode;
-}) => {
+        code: (props) => {
+  const { inline, className, children, ...rest } = props as {
+    inline?: boolean;
+    className?: string;
+    children: React.ReactNode;
+  };
+
   if (inline) {
     return (
-      <code className="bg-gray-200 dark:bg-gray-700 rounded px-1 py-0.5 text-sm" {...props}>
+      <code className="bg-gray-200 dark:bg-gray-700 rounded px-1 py-0.5 text-sm" {...rest}>
         {children}
       </code>
     );
   }
+
   return (
     <pre className="bg-gray-800 rounded-md p-3 my-2 overflow-x-auto">
-      <code className="text-white" {...props}>
+      <code className="text-white" {...rest}>
         {children}
       </code>
     </pre>
@@ -340,7 +335,7 @@ setTimeout(() => {
                     <div className="text-center text-muted-foreground py-8">
                       <Sparkles className="mx-auto h-8 w-8 mb-2" />
                       <p>Ask AethraBot to help with your notes!</p>
-                      {!('speechSynthesis' in window) && (
+                      {!isSpeechSupported && (
                         <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-2">
                           Text-to-speech not available in your browser
                         </p>
@@ -397,7 +392,7 @@ setTimeout(() => {
                               >
                                 <Clipboard className="h-3 w-3" />
                               </Button>
-                              {message.role === 'assistant' && ('speechSynthesis' in window) && (
+                              {message.role === 'assistant' && isSpeechSupported && (
                                 <Button
                                   variant="ghost"
                                   size="icon"
