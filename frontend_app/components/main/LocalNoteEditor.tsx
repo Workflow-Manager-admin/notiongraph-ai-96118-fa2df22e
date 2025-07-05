@@ -80,7 +80,6 @@ export const LocalNoteEditor: React.FC<LocalNoteEditorProps> = ({
         <BlocknoteEditor
           initialContent={content}
           onChange={handleContentChange}
-          placeholder="Write your note here..."
           // Forward any extra props if your Blocknote editor needs
         />
       </div>
