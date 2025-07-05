@@ -1,13 +1,18 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, SVGMotionProps } from "framer-motion";
+import React from "react";
 
-export const Logo = () => {
+interface LogoProps extends SVGMotionProps<SVGSVGElement> {
+  className?: string;
+}
+
+export const Logo: React.FC<LogoProps> = ({ className = "", ...props }) => {
   return (
     <motion.svg
       viewBox="0 0 200 200"
       xmlns="http://www.w3.org/2000/svg"
-      className="h-10 w-10 text-primary"
+      className={`h-10 w-10 text-primary ${className}`}
       fill="none"
       initial={{ rotate: 0 }}
       animate={{ rotate: 360 }}
@@ -16,6 +21,7 @@ export const Logo = () => {
         repeat: Infinity,
         ease: "linear",
       }}
+      {...props}
     >
       {/* Pulsing circular glow */}
       <motion.circle
@@ -43,7 +49,7 @@ export const Logo = () => {
         transition={{ duration: 4, repeat: Infinity }}
       />
 
-      {/* Orbiting electrons (simulate 3D) */}
+      {/* Orbiting electrons */}
       {[0, 1, 2].map((i) => (
         <motion.circle
           key={i}
@@ -89,27 +95,22 @@ export const Logo = () => {
           <stop offset="0%" stopColor="#0044ff" stopOpacity="0.3" />
           <stop offset="100%" stopColor="#000000" stopOpacity="0" />
         </radialGradient>
-
         <linearGradient id="aGradient" x1="40" y1="40" x2="160" y2="160">
           <stop offset="0%" stopColor="#00C1FF" />
           <stop offset="100%" stopColor="#0044ff" />
         </linearGradient>
-
         <linearGradient id="aStroke" x1="40" y1="40" x2="160" y2="160">
           <stop offset="0%" stopColor="#A6E4FF" />
           <stop offset="100%" stopColor="#00B8FF" />
         </linearGradient>
-
         <linearGradient id="innerGlow" x1="70" y1="70" x2="130" y2="130">
           <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.7" />
           <stop offset="100%" stopColor="#00FFF0" stopOpacity="0.5" />
         </linearGradient>
-
         <radialGradient id="electronGradient" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#00FFF0" />
           <stop offset="100%" stopColor="#0044ff" />
         </radialGradient>
-
         <linearGradient id="orbitGradient" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#00FFF0" stopOpacity="0.7" />
           <stop offset="50%" stopColor="#0044ff" stopOpacity="0.4" />
