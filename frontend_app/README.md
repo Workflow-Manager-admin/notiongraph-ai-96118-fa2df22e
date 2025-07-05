@@ -24,60 +24,32 @@ This project is built with the following technologies:
 
 For a complete list of the dependencies, refer to the `package.json` file.
 
-## Getting Started
 
-Firstly, you need Node.js and npm(you can use Yarn too) installed in your system. You can download Node.js
-from https://nodejs.org/ and npm is included in the Node.js installation.
+# NotionGraph AI Frontend
 
-### Clone the Repository
+## Features
 
-You can clone this repository using the following command:
+- Markdown/block notes editor (Blocknote)
+- **Offline/local notes**: Save, organize, and edit notes in a folder-like structure entirely in your browser using IndexedDB for effectively unlimited local storage. Local notes are accessible via the "Local Notes" navigation link and are available offline!
 
-```bash
-git clone https://github.com/Osadhi/athera.git
-```
+## Development
 
-### Installation
+- Built with Next.js, Tailwind CSS, TypeScript, and Radix UI.
+- Start in dev mode: `npm run dev`
+- Build: `npm run build`
 
-Navigate to the project directory and install the dependencies:
+## Usage
 
-```bash
-cd athera
-npm install
-```
+- To use the local notes feature:  
+  Click on **"Local Notes"** in the navigation sidebar to open the offline storage panel.  
+  - Create folders and notes, edit and organize them.
+  - All changes are saved instantly to your browser using IndexedDB.
+  - Notes and folders remain available even when offline.
 
-### Environment Variables
+## Other Features
 
-To run this project, you will need to add the following environment variables to your .env file:
-
-`CONVEX_DEPLOYMENT` - You can set this value as needed for your Convex deployment.
-
-`NEXT_PUBLIC_CONVEX_URL` - This should match the root URL of your Convex deployment.
-
-`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Your Clerk publishable key, which you can find in your Clerk dashboard.
-
-`CLERK_SECRET_KEY` - Your Clerk secret key, which you can also find in your Clerk dashboard.
-
-`EDGE_STORE_ACCESS_KEY` and `EDGE_STORE_SECRET_KEY` - Your Edge Store access and secret keys.
-
-### Running Athera
-
-You can start the development server using:
-
-```bash
-npm run dev
-```
-
-Then open http://localhost:3000 with your browser to see Athera working in action.
-
-## Acknowledgements
-
-This project is built by following a tutorial on YouTube and a GitHub repo. For more information, check out these
-resources:
-
-- [YouTube Tutorial](https://www.youtube.com/watch?v=0OaDyjB9Ib8)
-- [GitHub Repository Tutorial](https://github.com/AntonioErdeljac/notion-clone-tutorial)
-
-## License
-
-This project is licensed under the [MIT License](./LICENSE).
+- Obsidian-style graph-view
+- AI Assistant (AethraBot with Google Gemini)
+- Dropbox backup/restore
+- Clerk authentication
+- Theme switching and beautiful, minimal UI

@@ -1,5 +1,12 @@
 "use client";
 
+import React, {
+  ElementRef,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   ChevronLeft,
   MenuIcon,
@@ -9,13 +16,6 @@ import {
   Settings,
   Trash,
 } from "lucide-react";
-import React, {
-  ElementRef,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
 import { useMediaQuery } from "usehooks-ts";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -34,6 +34,21 @@ import { TrashBox } from "@/components/main/trash-box";
 import { useSearch } from "@/hooks/use-search";
 import { useSettings } from "@/hooks/use-settings";
 import { Navbar } from "@/components/main/navbar";
+import { NoteIcon } from "@/components/icons";
+
+// 🧭 Navigation links array
+const NAV_LINKS = [
+  {
+    title: "Documents",
+    icon: <NoteIcon />,
+    href: "/documents",
+  },
+  {
+    title: "Local Notes",
+    icon: <NoteIcon />,
+    href: "/documents/local",
+  },
+];
 
 export const Navigation = () => {
   const router = useRouter();
@@ -51,7 +66,7 @@ export const Navigation = () => {
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
 
   const handleMouseDown = (
-    event: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>
   ) => {
     event.preventDefault();
     event.stopPropagation();
@@ -71,7 +86,10 @@ export const Navigation = () => {
     if (sidebarRef.current && navbarRef.current) {
       sidebarRef.current.style.width = `${newWidth}px`;
       navbarRef.current.style.setProperty("left", `${newWidth}px`);
-      navbarRef.current.style.setProperty("width", `calc(100% - ${newWidth}px`);
+      navbarRef.current.style.setProperty(
+        "width",
+        `calc(100% - ${newWidth}px)`
+      );
     }
   };
 
@@ -87,10 +105,13 @@ export const Navigation = () => {
       setIsResetting(true);
 
       sidebarRef.current.style.width = isMobile ? "100%" : "240px";
-      navbarRef.current.style.setProperty("left", isMobile ? "100%" : "240px");
+      navbarRef.current.style.setProperty(
+        "left",
+        isMobile ? "100%" : "240px"
+      );
       navbarRef.current.style.setProperty(
         "width",
-        isMobile ? "0" : "calc(100% - 240px",
+        isMobile ? "0" : "calc(100% - 240px)"
       );
 
       setTimeout(() => setIsResetting(false), 300);
@@ -112,7 +133,7 @@ export const Navigation = () => {
 
   const handleCreate = () => {
     const promise = create({ title: "Untitled" }).then((documentId) =>
-      router.push(`/documents/${documentId}`),
+      router.push(`/documents/${documentId}`)
     );
 
     toast.promise(promise, {
@@ -137,25 +158,44 @@ export const Navigation = () => {
         className={cn(
           "group/sidebar h-full bg-secondary overflow-y-auto relative flex w-60 flex-col z-[99999]",
           isResetting && "transition-all ease-in-out duration-300",
-          isMobile && "w-0",
+          isMobile && "w-0"
         )}
       >
+        {/* Collapse Button */}
         <div
-          role="botton"
+          role="button"
           onClick={collapse}
           className={cn(
             "h-6 w-6 text-muted-foreground rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 absolute top-3 right-2 opacity-0 group-hover/sidebar:opacity-100 transition",
-            isMobile && "opacity-100",
+            isMobile && "opacity-100"
           )}
         >
           <ChevronLeft className="h-6 w-6" />
         </div>
+
+        {/* Top User Actions */}
         <div>
           <UserItem />
           <Item onClick={search.onOpen} label="Search" icon={Search} isSearch />
           <Item onClick={settings.onOpen} label="Settings" icon={Settings} />
           <Item onClick={handleCreate} label="New Page" icon={PlusCircle} />
         </div>
+
+        {/* Injected NAV_LINKS */}
+        <div className="mt-4 space-y-1">
+          {NAV_LINKS.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="flex items-center gap-2 px-3 py-2 hover:bg-muted rounded text-sm text-muted-foreground"
+            >
+              {link.icon}
+              <span>{link.title}</span>
+            </a>
+          ))}
+        </div>
+
+        {/* Document list + Trash */}
         <div className="mt-4">
           <DocumentList />
           <Item onClick={handleCreate} label="Add a Page" icon={Plus} />
@@ -171,18 +211,22 @@ export const Navigation = () => {
             </PopoverContent>
           </Popover>
         </div>
+
+        {/* Resize handle */}
         <div
           onMouseDown={handleMouseDown}
           onClick={resetWidth}
           className="opacity-0 group-hover/sidebar:opacity-100 transition cursor-ew-resize absolute h-full w-1 bg-primary/10 right-0 top-0"
         />
       </aside>
+
+      {/* Top Nav Area */}
       <div
         ref={navbarRef}
         className={cn(
           "absolute top-0 z-[99999] left-60 w-[calc(100%-240px)]",
           isResetting && "transition-all ease-in-out duration-300",
-          isMobile && "left-0 w-full",
+          isMobile && "left-0 w-full"
         )}
       >
         {params.documentId ? (
