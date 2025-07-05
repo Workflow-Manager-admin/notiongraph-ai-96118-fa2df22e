@@ -5,11 +5,15 @@ import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { Loader2 } from "lucide-react";
 
+/**
+ * PUBLIC_INTERFACE
+ * GraphPage renders the interactive NoteGraphView loaded with real relation/backlink data from Convex.
+ */
 export default function GraphPage() {
   const { isLoaded, user } = useUser();
+  // Note: getGraphData does not take args after refactor, only returns current user's graph
   const { data: graphData, isLoading, error } = useQuery(
-    api.notes.getGraphData, 
-    user ? { userId: user.id } : "skip"
+    api.documents.getGraphData
   );
 
   if (!isLoaded || isLoading) {

@@ -193,6 +193,52 @@ export const getById = query({
     return document;
   },
 });
+/**
+ * PUBLIC_INTERFACE
+ * getGraphData - Convex query for building the note graph view (nodes, links, and backlinks).
+ * Returns all non-archived documents as nodes and builds links/relations using parentDocument and backlink edges.
+ */
+export const getGraphData = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not Authenticated");
+    const userId = identity.subject;
+
+    // Fetch all documents for user
+    const documents = await ctx.db
+      .query("documents")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    // Nodes: Each document (id, title)
+    const nodes = documents
+      .filter(doc => doc && !doc.isArchived)
+      .map(doc => ({
+        id: doc._id,
+        title: doc.title,
+        group: doc.parentDocument || "root"
+      }));
+
+    // Links: Parent-child relations (edges)
+    const links = [];
+    for (const doc of documents) {
+      if (
+        doc &&
+        !doc.isArchived &&
+        doc.parentDocument
+      ) {
+        links.push({
+          source: doc.parentDocument,
+          target: doc._id
+        });
+      }
+      // TODO: If there are backlinks, add them as extra links here.
+      // For future backlink support, extract references from content, etc.
+    }
+
+    return { nodes, links };
+  }
+});
 
 export const update = mutation({
   args: {
