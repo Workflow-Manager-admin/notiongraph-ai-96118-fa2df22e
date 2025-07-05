@@ -7,12 +7,8 @@ const es = initEdgeStore.create();
  * This is the main router for the EdgeStore buckets.
  */
 const edgeStoreRouter = es.router({
-  publicFiles: es.fileBucket({
-    access: 'public', // ✅ This allows public access to uploaded files
-  }),
+  publicFiles: es.fileBucket(),
 });
-
-
 
 const handler = createEdgeStoreNextHandler({
   router: edgeStoreRouter,

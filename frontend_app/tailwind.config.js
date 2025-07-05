@@ -1,5 +1,3 @@
- // Converted to JS for compatibility with Tailwind/PostCSS default config loading
-
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
@@ -24,18 +22,13 @@ module.exports = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-        /**
-         * Primary — strong blue (unchanged per original branding)
-         * Secondary — updated to a modern light blue!
-         */
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          // #60A5FA is Tailwind blue-400. HSL: 212, 92%, 68%
           DEFAULT: "#60A5FA",
-          foreground: "#1e293b", // dark slate for legible text
+          foreground: "#1e293b",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -73,15 +66,16 @@ module.exports = {
           to: { height: 0 },
         },
         fadeIn: {
-          "0%": { opacity: "0" },
-          "100%": { opacity: "1" },
+          "0%": { opacity: 0, transform: "translateY(10px)" },
+          "100%": { opacity: 1, transform: "translateY(0)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-in": "fadeIn 0.5s ease-in-out",
+        "fade-in": "fadeIn 0.5s ease-in-out forwards",
         "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "pulse-fast": "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
     },
   },

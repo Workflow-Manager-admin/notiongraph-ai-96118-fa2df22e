@@ -5,10 +5,12 @@ import { Button } from "@ui/button";
 import { Textarea } from "@ui/textarea";
 import { Card, CardHeader, CardTitle, CardContent } from "@ui/card";
 import { ScrollArea } from "@ui/scroll-area";
-import { Loader2, Send, Bookmark, Sparkles, Clipboard } from "lucide-react";
+import { Loader2, Send, Bookmark, Sparkles, Clipboard, Volume2, VolumeX } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { toast } from 'sonner';
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 type Message = {
   role: 'user' | 'assistant';
@@ -17,13 +19,39 @@ type Message = {
 };
 
 const AethraBotChat: React.FC = () => {
+  const saveBotNote = useMutation(api.documents.saveBotNote);
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'notes'>('chat');
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [currentSpeakingIndex, setCurrentSpeakingIndex] = useState<number | null>(null);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  
   const { user } = useClerk();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const speechSynthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  // Load available voices
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      const loadVoices = () => {
+        const availableVoices = window.speechSynthesis.getVoices();
+        setVoices(availableVoices);
+      };
+
+      // Load voices immediately if available
+      loadVoices();
+
+      // Some browsers load voices asynchronously
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+
+      return () => {
+        window.speechSynthesis.onvoiceschanged = null;
+      };
+    }
+  }, []);
 
   // Sample predefined prompts
   const predefinedPrompts = [
@@ -41,6 +69,77 @@ const AethraBotChat: React.FC = () => {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Text-to-speech functionality with proper voice handling
+  const handleSpeak = (text: string, index: number) => {
+    if (!('speechSynthesis' in window)) {
+      toast.error('Text-to-speech is not supported in your browser');
+      return;
+    }
+
+    // Stop any ongoing speech
+    if (speechSynthesisRef.current) {
+      window.speechSynthesis.cancel();
+    }
+
+    try {
+      // Remove markdown formatting for cleaner speech
+      const cleanText = text.replace(/[#*_`~]/g, '');
+
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.rate = 0.9;
+      utterance.pitch = 1.0;
+
+      // Select a voice (prefer English voices if available)
+      if (voices.length > 0) {
+        const englishVoice = voices.find(v => v.lang.includes('en')) || voices[0];
+        utterance.voice = englishVoice;
+      }
+
+      utterance.onstart = () => {
+        setIsSpeaking(true);
+        setCurrentSpeakingIndex(index);
+      };
+
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        setCurrentSpeakingIndex(null);
+      };
+
+      utterance.onerror = (event) => {
+        console.error('SpeechSynthesis error:', event);
+        setIsSpeaking(false);
+        setCurrentSpeakingIndex(null);
+        toast.error('Error reading message aloud');
+      };
+
+      speechSynthesisRef.current = utterance;
+setTimeout(() => {
+  window.speechSynthesis.speak(utterance);
+}, 100);
+      window.speechSynthesis.speak(utterance);
+    } catch (error) {
+      console.error('Error initializing speech:', error);
+      toast.error('Failed to initialize speech');
+    }
+  };
+
+  const handleStopSpeaking = () => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    setIsSpeaking(false);
+    setCurrentSpeakingIndex(null);
+  };
+
+  // Clean up speech synthesis on unmount
+  useEffect(() => {
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -125,10 +224,20 @@ const AethraBotChat: React.FC = () => {
     toast.success('Copied to clipboard!');
   };
 
-  const saveToNotes = (content: string) => {
-    // Implement your note-saving logic here
-    console.log('Saving to notes:', content);
-    toast.success('Note saved successfully!');
+  const saveToNotes = async (content: string) => {
+    try {
+      // Remove markdown formatting for the title
+      const title = content.split('\n')[0].replace(/[#*_`~]/g, '').substring(0, 50);
+      
+      await saveBotNote({
+        title: title || "AethraBot Note",
+        content,
+      });
+      toast.success("Note saved to your workspace!");
+    } catch (error) {
+      toast.error("Failed to save note");
+      console.error(error);
+    }
   };
 
   const renderMarkdown = (content: string) => (
@@ -142,22 +251,26 @@ const AethraBotChat: React.FC = () => {
         ul: ({ node, ...props }) => <ul className="list-disc pl-6 mb-3" {...props} />,
         ol: ({ node, ...props }) => <ol className="list-decimal pl-6 mb-3" {...props} />,
         li: ({ node, ...props }) => <li className="mb-1" {...props} />,
-        code: ({ node, inline, className, children, ...props }) => {
-          if (inline) {
-            return (
-              <code className="bg-gray-200 dark:bg-gray-700 rounded px-1 py-0.5 text-sm" {...props}>
-                {children}
-              </code>
-            );
-          }
-          return (
-            <pre className="bg-gray-800 rounded-md p-3 my-2 overflow-x-auto">
-              <code className="text-white" {...props}>
-                {children}
-              </code>
-            </pre>
-          );
-        },
+        code: ({ inline, className, children, ...props }: {
+  inline?: boolean;
+  className?: string;
+  children: React.ReactNode;
+}) => {
+  if (inline) {
+    return (
+      <code className="bg-gray-200 dark:bg-gray-700 rounded px-1 py-0.5 text-sm" {...props}>
+        {children}
+      </code>
+    );
+  }
+  return (
+    <pre className="bg-gray-800 rounded-md p-3 my-2 overflow-x-auto">
+      <code className="text-white" {...props}>
+        {children}
+      </code>
+    </pre>
+  );
+},
         blockquote: ({ node, ...props }) => (
           <blockquote className="border-l-4 border-gray-300 pl-4 italic text-gray-600 dark:text-gray-300 my-3" {...props} />
         ),
@@ -227,6 +340,11 @@ const AethraBotChat: React.FC = () => {
                     <div className="text-center text-muted-foreground py-8">
                       <Sparkles className="mx-auto h-8 w-8 mb-2" />
                       <p>Ask AethraBot to help with your notes!</p>
+                      {!('speechSynthesis' in window) && (
+                        <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-2">
+                          Text-to-speech not available in your browser
+                        </p>
+                      )}
                       <div className="mt-4 space-y-2">
                         {predefinedPrompts.map((prompt, i) => (
                           <Button
@@ -252,7 +370,15 @@ const AethraBotChat: React.FC = () => {
                           className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                         >
                           <div
-                            className={`max-w-[80%] rounded-lg px-4 py-2 ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}
+                            className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                              message.role === 'user' 
+                                ? 'bg-primary text-primary-foreground' 
+                                : 'bg-secondary text-secondary-foreground'
+                            } ${
+                              currentSpeakingIndex === index && isSpeaking 
+                                ? 'ring-2 ring-blue-500' 
+                                : ''
+                            }`}
                           >
                             <div className="prose prose-sm dark:prose-invert max-w-none">
                               {message.role === 'assistant' ? (
@@ -267,15 +393,38 @@ const AethraBotChat: React.FC = () => {
                                 size="icon"
                                 className="h-6 w-6 text-muted-foreground hover:text-primary"
                                 onClick={() => copyToClipboard(message.content)}
+                                title="Copy to clipboard"
                               >
                                 <Clipboard className="h-3 w-3" />
                               </Button>
+                              {message.role === 'assistant' && ('speechSynthesis' in window) && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 text-muted-foreground hover:text-primary"
+                                  onClick={() => {
+                                    if (isSpeaking && currentSpeakingIndex === index) {
+                                      handleStopSpeaking();
+                                    } else {
+                                      handleSpeak(message.content, index);
+                                    }
+                                  }}
+                                  title={isSpeaking && currentSpeakingIndex === index ? "Stop reading" : "Read aloud"}
+                                >
+                                  {isSpeaking && currentSpeakingIndex === index ? (
+                                    <VolumeX className="h-3 w-3" />
+                                  ) : (
+                                    <Volume2 className="h-3 w-3" />
+                                  )}
+                                </Button>
+                              )}
                               {message.role === 'assistant' && (
                                 <Button
                                   variant="ghost"
                                   size="icon"
                                   className="h-6 w-6 text-muted-foreground hover:text-primary"
                                   onClick={() => saveToNotes(message.content)}
+                                  title="Save to notes"
                                 >
                                   <Bookmark className="h-3 w-3" />
                                 </Button>

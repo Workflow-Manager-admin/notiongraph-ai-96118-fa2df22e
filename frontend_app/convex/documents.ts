@@ -302,3 +302,26 @@ export const removeCoverImage = mutation({
     return document;
   },
 });
+export const saveBotNote = mutation({
+  args: {
+    title: v.string(),
+    content: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const userId = identity.subject;
+
+    const docId = await ctx.db.insert("documents", {
+      userId,
+      title: args.title,
+      content: args.content,
+      parentDocument: undefined,
+      isArchived: false,
+      isPublished: false,
+    });
+
+    return docId;
+  },
+});
