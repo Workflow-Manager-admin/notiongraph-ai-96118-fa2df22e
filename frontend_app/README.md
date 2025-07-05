@@ -1,4 +1,4 @@
-# Athera
+v# Athera
 
 Athera is a clone of the popular note-taking application Notion. It's built with Next.js as a learning exercise,
 following a tutorial on YouTube.

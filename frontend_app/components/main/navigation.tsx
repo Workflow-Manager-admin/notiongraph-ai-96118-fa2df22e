@@ -34,19 +34,24 @@ import { TrashBox } from "@/components/main/trash-box";
 import { useSearch } from "@/hooks/use-search";
 import { useSettings } from "@/hooks/use-settings";
 import { Navbar } from "@/components/main/navbar";
-import { NoteIcon } from "@/components/icons";
+import { Icons } from "@/components/icons";
 
-// 🧭 Navigation links array
+// ✅ Navigation links with Graph View added
 const NAV_LINKS = [
   {
     title: "Documents",
-    icon: <NoteIcon />,
+    icon: <Icons.note />,
     href: "/documents",
   },
   {
     title: "Local Notes",
-    icon: <NoteIcon />,
+    icon: <Icons.note />,
     href: "/documents/local",
+  },
+  {
+    title: "Graph View",
+    icon: <Icons.network />,
+    href: "/graph",
   },
 ];
 
@@ -161,7 +166,6 @@ export const Navigation = () => {
           isMobile && "w-0"
         )}
       >
-        {/* Collapse Button */}
         <div
           role="button"
           onClick={collapse}
@@ -173,7 +177,6 @@ export const Navigation = () => {
           <ChevronLeft className="h-6 w-6" />
         </div>
 
-        {/* Top User Actions */}
         <div>
           <UserItem />
           <Item onClick={search.onOpen} label="Search" icon={Search} isSearch />
@@ -181,7 +184,6 @@ export const Navigation = () => {
           <Item onClick={handleCreate} label="New Page" icon={PlusCircle} />
         </div>
 
-        {/* Injected NAV_LINKS */}
         <div className="mt-4 space-y-1">
           {NAV_LINKS.map((link) => (
             <a
@@ -195,7 +197,6 @@ export const Navigation = () => {
           ))}
         </div>
 
-        {/* Document list + Trash */}
         <div className="mt-4">
           <DocumentList />
           <Item onClick={handleCreate} label="Add a Page" icon={Plus} />
@@ -212,7 +213,6 @@ export const Navigation = () => {
           </Popover>
         </div>
 
-        {/* Resize handle */}
         <div
           onMouseDown={handleMouseDown}
           onClick={resetWidth}
@@ -220,7 +220,6 @@ export const Navigation = () => {
         />
       </aside>
 
-      {/* Top Nav Area */}
       <div
         ref={navbarRef}
         className={cn(

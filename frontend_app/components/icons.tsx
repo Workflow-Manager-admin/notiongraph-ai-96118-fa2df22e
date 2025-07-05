@@ -2,23 +2,27 @@ import { LucideProps } from "lucide-react";
 import dynamic from "next/dynamic";
 
 export const Icons = {
-  // Graph-related icons
-  network: dynamic(() => import("lucide-react").then(mod => mod.Network)),
-  search: dynamic(() => import("lucide-react").then(mod => mod.Search)),
-  list: dynamic(() => import("lucide-react").then(mod => mod.List)),
-  clock: dynamic(() => import("lucide-react").then(mod => mod.Clock)),
-  maximize: dynamic(() => import("lucide-react").then(mod => mod.Maximize)),
-  minimize: dynamic(() => import("lucide-react").then(mod => mod.Minimize)),
-  // center: dynamic(() => import("lucide-react").then(mod => mod.Center)), // Center does not exist in Lucide
-  layers: dynamic(() => import("lucide-react").then(mod => mod.Layers)),
-  circle: dynamic(() => import("lucide-react").then(mod => mod.Circle)),
-  menu: dynamic(() => import("lucide-react").then(mod => mod.Menu)),
-  x: dynamic(() => import("lucide-react").then(mod => mod.X)),
-  plus: dynamic(() => import("lucide-react").then(mod => mod.Plus)),
-  settings: dynamic(() => import("lucide-react").then(mod => mod.Settings)),
-  help: dynamic(() => import("lucide-react").then(mod => mod.HelpCircle)),
+  // Graph / UI Related
+  network: dynamic(() => import("lucide-react").then((mod) => mod.Network)),
+  search: dynamic(() => import("lucide-react").then((mod) => mod.Search)),
+  list: dynamic(() => import("lucide-react").then((mod) => mod.List)),
+  clock: dynamic(() => import("lucide-react").then((mod) => mod.Clock)),
+  maximize: dynamic(() => import("lucide-react").then((mod) => mod.Maximize)),
+  minimize: dynamic(() => import("lucide-react").then((mod) => mod.Minimize)),
+  layers: dynamic(() => import("lucide-react").then((mod) => mod.Layers)),
+  circle: dynamic(() => import("lucide-react").then((mod) => mod.Circle)),
 
-  // Logo/wordmark if needed
+  // Utility Icons
+  menu: dynamic(() => import("lucide-react").then((mod) => mod.Menu)),
+  x: dynamic(() => import("lucide-react").then((mod) => mod.X)),
+  plus: dynamic(() => import("lucide-react").then((mod) => mod.Plus)),
+  settings: dynamic(() => import("lucide-react").then((mod) => mod.Settings)),
+  help: dynamic(() => import("lucide-react").then((mod) => mod.HelpCircle)),
+
+  // ✅ New: Note icon (for documents, notes, etc.)
+  note: dynamic(() => import("lucide-react").then((mod) => mod.FileText)),
+
+  // Optional: Custom logo SVG (static)
   logo: (props: LucideProps) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
