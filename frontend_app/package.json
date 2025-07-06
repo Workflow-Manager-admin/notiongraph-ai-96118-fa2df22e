@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "echo '===== Starting Next.js build (output should be in .next) =====' && next build && echo '===== Build finished; .next output dir listing: =====' && ls -lh .next || (echo 'Build step failed or .next directory missing. See README.md for debugging.')",
     "start": "next start",
     "lint": "next lint"
   },
