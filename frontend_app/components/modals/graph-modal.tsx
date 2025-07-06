@@ -1,7 +1,7 @@
 "use client";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { NoteGraphView } from "@/app/graph/components/note-graph-view";
+import { NoteGraphView } from "@/components/note-graph-view";
 import { useGraphModal } from "@/hooks/use-graph-modal";
 
 /**
